@@ -1,0 +1,6 @@
+{
+  "name": "Chaning.G's Lightroom Lab",
+  "description": "An aesthetic high-end color grading assistant for folder-based Lightroom photo editing, featuring Quick Mode style detection and Professional Mode custom style adjustment.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

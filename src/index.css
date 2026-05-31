@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "SimSun", "STSong", "Songti SC", serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", "SimSun", "STSong", "Songti SC", monospace;
+}
+
+/* Custom slider track colors for Lightroom simulation */
+input[type="range"].slider-track-temp::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #3b82f6 0%, #27272a 50%, #eab308 100%) !important;
+}
+input[type="range"].slider-track-temp {
+  background: linear-gradient(to right, #3b82f6 0%, #27272a 50%, #eab308 100%) !important;
+}
+
+input[type="range"].slider-track-tint::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #22c55e 0%, #27272a 50%, #ec4899 100%) !important;
+}
+input[type="range"].slider-track-tint {
+  background: linear-gradient(to right, #22c55e 0%, #27272a 50%, #ec4899 100%) !important;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #404040;
+}
+
