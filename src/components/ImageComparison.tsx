@@ -5,6 +5,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { getCssFilter } from "../utils/filter";
+import { renderGradedCanvas } from "../utils/canvasGrading";
 import { LightroomParams } from "../types";
 import { Eye, Sliders } from "lucide-react";
 
@@ -17,7 +18,9 @@ interface ImageComparisonProps {
 export default function ImageComparison({ imageUrl, params, alt }: ImageComparisonProps) {
   const [sliderPosition, setSliderPosition] = useState<number>(50); // percentage 0-100
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [renderError, setRenderError] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -53,6 +56,70 @@ export default function ImageComparison({ imageUrl, params, alt }: ImageComparis
     setSliderPosition(50);
   };
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container || !imageUrl) return;
+
+    let cancelled = false;
+    let resizeObserver: ResizeObserver | null = null;
+    let renderTimer: number | null = null;
+
+    const render = () => {
+      if (cancelled || !canvasRef.current || !containerRef.current) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return;
+
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      canvasRef.current.width = Math.max(1, Math.round(rect.width * pixelRatio));
+      canvasRef.current.height = Math.max(1, Math.round(rect.height * pixelRatio));
+
+      const img = new Image();
+      img.decoding = "async";
+      img.referrerPolicy = "no-referrer";
+      if (/^https?:/i.test(imageUrl)) {
+        img.crossOrigin = "anonymous";
+      }
+
+      img.onload = () => {
+        if (cancelled || !canvasRef.current) return;
+        try {
+          renderGradedCanvas(canvasRef.current, img, params);
+          setRenderError(false);
+        } catch (error) {
+          console.warn("Canvas grading failed; falling back to CSS preview.", error);
+          setRenderError(true);
+        }
+      };
+
+      img.onerror = () => {
+        if (!cancelled) setRenderError(true);
+      };
+
+      img.src = imageUrl;
+    };
+
+    const scheduleRender = () => {
+      if (renderTimer !== null) {
+        window.clearTimeout(renderTimer);
+      }
+      renderTimer = window.setTimeout(render, 40);
+    };
+
+    scheduleRender();
+    resizeObserver = new ResizeObserver(scheduleRender);
+    resizeObserver.observe(container);
+
+    return () => {
+      cancelled = true;
+      if (renderTimer !== null) {
+        window.clearTimeout(renderTimer);
+      }
+      resizeObserver?.disconnect();
+    };
+  }, [imageUrl, params]);
+
   return (
     <div className="relative w-full h-[60vh] min-h-[400px] max-h-[800px] bg-zinc-950 rounded-xl overflow-hidden shadow-2xl select-none group border border-zinc-800">
       {/* Before / After labels */}
@@ -87,16 +154,23 @@ export default function ImageComparison({ imageUrl, params, alt }: ImageComparis
           id="after-photo-overlay"
           className="absolute inset-0 w-full h-full pointer-events-none transition-all duration-75"
           style={{
-            clipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)`,
+            clipPath: `polygon(${sliderPosition}% 0, 100% 0, 100% 100%, ${sliderPosition}% 100%)`,
           }}
         >
-          <img
-            src={imageUrl}
-            alt={`${alt} graded`}
-            referrerPolicy="no-referrer"
-            style={{ filter: getCssFilter(params) }}
-            className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none"
+          <canvas
+            ref={canvasRef}
+            aria-label={`${alt} graded`}
+            className={`absolute inset-0 w-full h-full select-none pointer-events-none ${renderError ? "opacity-0" : "opacity-100"}`}
           />
+          {renderError && (
+            <img
+              src={imageUrl}
+              alt={`${alt} graded`}
+              referrerPolicy="no-referrer"
+              style={{ filter: getCssFilter(params) }}
+              className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none"
+            />
+          )}
         </div>
 
         {/* Drag Separator Bar */}

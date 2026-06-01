@@ -1,75 +1,161 @@
-# 📸 VOGUE-GENAI-V4 神经色彩引擎 (AI Lightroom 调色工作站)
+# VOGUE-GENAI-V4 AI Lightroom 调色工作台
 
-> **作者**: Chaning.G
-> **联系微信**: 15524872722
+一个面向摄影后期的 AI 调色与 Lightroom 参数生成工具。项目支持导入本地照片，在浏览器中实时预览 Before / After 调色效果，并生成可用于 Lightroom Classic 的 `.XMP` 预设参数。
 
-这是一个融合了大语言模型（LLM）美学特质与高级网页实时滤镜渲染技术的专业摄影后期工作流。它能将您的相机 RAW 文件夹与 AI 灵感直接桥接，在浏览器中即可使用专业的左侧工作区或**沉浸式右侧折叠面板（新）**完成直观的色彩、影调、HSL 及曲线微调，支持在看大图的同时一键调色，并允许生成 Lightroom 的 `.XMP` 预设，与本地 Lightroom Classic 客户端桥接。
+作者：Chaning.G  
+微信：15524872722
 
----
+## 项目亮点
 
-## ✨ 核心功能
+- **AI 智能调色建议**：根据照片内容生成 3 组适合当前画面的调色方案，包含风格名称、调色理由和 Lightroom 参数。
+- **专业参数面板**：支持曝光、对比度、高光、阴影、白色色阶、黑色色阶、色温、色调、自然饱和度、饱和度、清晰度、去雾等常用调色参数。
+- **HSL 八色通道控制**：支持红、橙、黄、绿、青、蓝、紫、洋红的色相、饱和度、明度调整。
+- **Canvas 像素级调色预览**：不再只依赖 CSS filter，预览层会进行真实像素级处理，包括自动曝光、白平衡、曲线、肤色保护、暗角、颗粒和高光柔化。
+- **Before / After 对比视图**：拖动分割线即可直观看到原图与调色后效果差异。
+- **Tone Curve 可视化**：右侧工作台展示当前参数对应的曲线变化，方便理解影调结构。
+- **XMP 导出**：可将当前调色参数导出为 Lightroom 可读取的 `.XMP` 文件。
+- **本地 Lightroom 同步接口**：预留本地同步桥接接口，方便后续接入 Lightroom Classic 自动应用参数。
 
-### 1. 🖥️ 全新专业级侧边调色工作台 (右侧边栏)
-- **大图沉浸式调色**：最新版本重构了界面布局，点击右侧悬浮的“参数与曲线面板”，即可展开专业的侧边栏工作台。
-- **实时边看边调**：您可以在中心区域全屏欣赏高分辨率对比图像的同时，在侧边栏精细调节高光、阴影、白色/黑色色阶，以及 8 色 HSL 面板和分离色调。
-- **动态布局适应**：打开侧边栏时主体内容会自动向左避让缩放，关闭时还原居中，兼顾屏幕利用率与调色视觉体验。
+## 技术栈
 
-### 2. 🌈 深度 CSS 滤镜重映射引擎
-- **Lightroom 属性深度还原**：以往浏览器受限于原生滤镜，无法精细化重现 Lightroom 的复杂参数。
-- **高级模拟映射**：通过复杂的亮度/对比度交叉计算，我们实现了在 Web 端对**高光(Highlights)、阴影(Shadows)、白色(Whites)、黑色(Blacks)** 以及 **HSL 八色通道（色相、饱和度、明度）** 的近似渲染预览，让参数变化立刻反映在照片上。
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS
+- Framer Motion
+- Express
+- Google Gemini API
+- Canvas 2D 图像处理
 
-### 3. 📈 动态色调曲线可视化 (Tone Curve)
-- **集成光影控制曲线预览**：在侧边栏中可直观查看当前亮度与对比度的实时曲线变化映射，呈现出极具专业感的 UI 视觉。
+## 快速开始
 
-### 4. 🌓 原图/调色后 (Before/After) 丝滑分割对比
-- **图像画布全面升级**：采用更合理宽比、大尺寸约束的主屏对比组件。交互极度丝滑，动态对比 RAW 原始特征与调色后的最终显像差异。
+### 1. 安装依赖
 
-### 5. 🤖 AI 智能灵感生成与多态预设模式
-- **一键演示模式**：在启动时可快速加载内置自带照片的 Mock 库，实现拿来即用的完美演示与交互体验。
-- **多功能调色盘**：内置“哥本哈根迷雾”、“新潮宿霓虹”等电影级预设，并且集成智能语义解析（需接入大语言模型及真实后端API）。
+```bash
+npm install
+```
 
-### 6. 🚀 本地 Lightroom 工业级无缝闭环
-- **XMP 一键导出**：完成在线色彩定调后，系统会将最新参数封装为合规的 Adobe Standard `.XMP` 文件供下载应用。
-- **LR 本地同步接口**：支持一键将数据发送至本地调试接口，供直接联控本地 Lightroom 软件。
+### 2. 配置环境变量
 
----
+复制 `.env.example` 为 `.env`：
 
-## ⚡ 极速本地部署指南
+```bash
+cp .env.example .env
+```
 
-##  注意：此应用调用的API目前仅支持Gemini，请先进入网页后在网页下方点击连接端口，下载解压后--在终端--进入文件目录后（在终端）输入"npm install undici",之后输入$env:HTTP_PROXY="http://127.0.0.1:xxxx"\n $env:HTTPS_PROXY="http://127.0.0.1:xxxx"\n npm run dev,这里的xxxx是您的VPN端口，并且将"server.ts"文件中第9行的7897端口更改成您的VPN端口
+然后在 `.env` 中填写你的 Gemini API Key：
 
-### 一键启动 (推荐 Windows 用户)
-无需懂编程与手动命令，双击即可完成环境准备与启动：
-1. **双击运行目录下的 `双击一键本地启动.bat`**。
-2. 脚本会自动申请权限并检测 Node.js 环境，一键下载依赖包并启动服务。
-3. 服务开启后，会在 **3 秒内自动拉起浏览器**，进入系统界面：[http://localhost:3000](http://localhost:3000)。
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+```
 
-*(提示：初次启动时由于要拉取相关运行依赖库，下载可能需要几十秒。如果遇到 bat 一闪而过，请务必确认电脑上已安装好 Node.js，并且添加到系统环境变量中。)*
+如果没有配置 API Key，项目仍然可以运行，但 AI 调色会进入本地模拟模式。
 
----
+### 3. 启动开发服务
 
-### 常规手动启动 (macOS / Linux / 开发者)
-若您使用 macOS 或是开发者，请执行以下步骤构建项目：
+```bash
+npm run dev
+```
 
-1. **安装 Node.js** (推荐 v18/v20/v22 以上版本)
-2. **安装依赖库** (在项目根目录下打开终端执行):
-   ```bash
-   npm install
-   ```
-3. **启动本地开发服务器**:
-   ```bash
-   npm run dev
-   ```
-   启动成功后在浏览器中打开 👉 [http://localhost:3000](http://localhost:3000)
+启动成功后打开：
 
----
+[http://localhost:3000](http://localhost:3000)
 
-## 🛠️ 项目工程结构说明
+### Windows 一键启动
 
-- `index.html` & `src/main.tsx` - Vite 前端应用工程入口。
-- `src/App.tsx` - 主控面板核心界面（集成右侧 Sidebar 工作台与所有主逻辑流转）。
-- `src/components/ImageComparison.tsx` - 核心 Before/After 图像对比视图滑动组件。
-- `src/components/GradingSliders.tsx` - 完整调色核心参数组视图 (基础、曝光、高光/阴影、8色 HSL 控制器)。
-- `src/components/ToneCurveVisualizer.tsx` - 高级曲线实时演算可视化组件。
-- `src/utils/filter.ts` - 核心调控引擎算法包：包含了将 Lightroom 调色参数“降维/转换”至 Web CSS 实时滤镜组合的核心数学映射逻辑。
-- `package.json` & 后端架构 - 集成本地调试服务器（如 `server.ts`）。
+Windows 用户也可以直接双击项目根目录中的：
+
+```text
+双击一键本地启动.bat
+```
+
+脚本会自动安装依赖并启动本地服务。
+
+## 常用命令
+
+```bash
+# 启动开发服务器
+npm run dev
+
+# 构建生产版本
+npm run build
+
+# 启动构建后的服务
+npm run start
+
+# TypeScript 检查
+npm run lint
+```
+
+## 使用方式
+
+1. 打开本地页面后，导入照片文件夹或使用内置演示照片。
+2. 选择一张照片进入主预览区。
+3. 点击 AI 分析，系统会生成多组调色建议。
+4. 选择喜欢的调色方案，也可以打开右侧参数面板进行手动微调。
+5. 使用 Before / After 分割线对比原图和调色后效果。
+6. 满意后导出 `.XMP`，导入 Lightroom 使用。
+
+## 项目结构
+
+```text
+.
+├── src
+│   ├── App.tsx                         # 主界面与业务流程
+│   ├── main.tsx                        # React 入口
+│   ├── index.css                       # 全局样式
+│   ├── types.ts                        # 类型定义
+│   ├── components
+│   │   ├── GradingSliders.tsx          # 调色参数面板
+│   │   ├── ImageComparison.tsx         # Before / After 对比预览
+│   │   └── ToneCurveVisualizer.tsx     # 曲线可视化
+│   └── utils
+│       ├── filter.ts                   # 预设与 CSS fallback 滤镜
+│       └── canvasGrading.ts            # Canvas 像素级调色引擎
+├── server.ts                           # Express + Gemini API 服务
+├── package.json
+├── vite.config.ts
+└── 双击一键本地启动.bat
+```
+
+## 调色引擎说明
+
+项目目前包含两套预览路径：
+
+- `canvasGrading.ts`：主调色引擎，负责真实像素级预览。
+- `filter.ts`：保留为 CSS fallback，当跨域图片或浏览器限制导致 Canvas 无法读取像素时自动降级使用。
+
+Canvas 调色引擎包含以下处理：
+
+- 自动曝光补偿
+- 灰度世界白平衡
+- 高光 / 阴影 / 白色 / 黑色分区影调映射
+- 参数化曲线
+- HSL 色彩混合
+- 肤色保护
+- 自然饱和度增强
+- 胶片式高光 roll-off
+- 暗角与细颗粒
+
+## API 说明
+
+主要接口：
+
+```text
+GET  /api/health
+GET  /api/lightroom/status
+POST /api/analyze-grading
+POST /api/generate-from-prompt
+POST /api/lightroom/sync
+```
+
+其中：
+
+- `/api/analyze-grading`：根据照片生成 3 组智能调色方案。
+- `/api/generate-from-prompt`：根据用户输入的风格提示词生成调色参数。
+- `/api/lightroom/sync`：模拟将当前参数同步到本地 Lightroom 辅助服务。
+
+
+## License
+
+Apache-2.0
