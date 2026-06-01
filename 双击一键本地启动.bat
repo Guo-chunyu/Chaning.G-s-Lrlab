@@ -1,84 +1,96 @@
 @echo off
-title Lightroom AI Grading Workspace Launcher
+setlocal
+title VOGUE-GENAI-V4 Local Launcher
+chcp 65001 >nul
 
-rem =====================================================================
-rem 1. SAFE ADMINISTRATOR ELEVATION (Bypasses VBS and paren-bashing syntax errors)
-rem =====================================================================
-net session >nul 2>&1
-if %errorlevel% equ 0 goto :gotAdmin
-
-echo ==========================================================
-echo  Requesting Administrator Privileges to avoid EPERM...
-echo  (Please click "Yes" in the Windows system popup window)
-echo ==========================================================
-powershell -Command "Start-Process '%~f0' -Verb RunAs"
-exit /b
-
-:gotAdmin
 cd /d "%~dp0"
 
-rem =====================================================================
-rem 2. ENVIRONMENT INITIALIZATION
-rem =====================================================================
-chcp 65001 >nul
-set "PATH=%PATH%;C:\Program Files\nodejs;%APPDATA%\npm;C:\Program Files (x86)\nodejs"
-
 echo ==========================================================
-echo        Lightroom Neural Grading Workspace Launcher
+echo        VOGUE-GENAI-V4 AI Lightroom Grading Workspace
 echo ==========================================================
 echo.
+echo Project directory:
+echo %CD%
+echo.
 
-echo [1/3] Checking Node.js environment...
-node -v >nul 2>&1
-if %errorlevel% neq 0 goto :noNode
-
-echo Success: Node.js is ready!
+echo [1/4] Checking Node.js...
+where node >nul 2>nul
+if errorlevel 1 goto :no_node
 node -v
 echo.
 
-echo [2/3] Syncing and installing dependencies (npm install)...
-echo (Using high-speed registry mirror...)
+echo [2/4] Checking npm...
+where npm >nul 2>nul
+if errorlevel 1 goto :no_npm
+call npm -v
 echo.
 
-call npm config set registry https://registry.npmmirror.com
-call npm install
-
-if %errorlevel% neq 0 (
-    echo Note: Some standard dependency warnings occurred, continuing to boot...
+echo [3/4] Installing dependencies if needed...
+if not exist "node_modules" (
+  echo node_modules not found. Running npm install...
+  call npm install
+  if errorlevel 1 goto :npm_install_failed
 ) else (
-    echo Success: Dependencies successfully updated!
+  echo node_modules already exists. Skipping npm install.
 )
 echo.
 
-echo [3/3] Starting Local Server...
+echo [4/4] Starting local server...
+ping -n 1 127.0.0.1 >nul
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$c = New-Object Net.Sockets.TcpClient; try { $c.Connect('127.0.0.1', 3000); $c.Close(); exit 0 } catch { exit 1 }" >nul 2>nul
+if not errorlevel 1 goto :server_already_running
+
 echo ==========================================================
-echo  SERVER STANDBY AT: http://localhost:3000
-echo  (Opening defaults web browser automatically in 3 seconds)
-echo  CLOSING THIS WINDOW WILL SHUT DOWN THE BACKEND ENDPOINT
+echo Open this URL in your browser:
+echo http://localhost:3000
+echo.
+echo This window is the backend server. Keep it open while using the app.
+echo Press Ctrl+C to stop the server.
 echo ==========================================================
 echo.
 
-rem Delayed non-blocking browser opener
 start "" cmd /c "timeout /t 3 /nobreak >nul && start http://localhost:3000"
-
-rem Launch backend & Vite development lifecycle
 call npm run dev
 
+echo.
+echo The server stopped.
 pause
-exit /b
+exit /b 0
 
-:noNode
+:server_already_running
+echo ==========================================================
+echo Port 3000 is already running.
+echo Opening the existing local app:
+echo http://localhost:3000
 echo.
-echo ********************************************************
-echo ERROR: Node.js was not detected in your system PATH!
-echo ********************************************************
-echo.
-echo Since you've already installed Node.js, Windows simply needs to
-echo refresh its environment variables.
-echo.
-echo HOW TO FIX:
-echo 1. Close this window and RESTART your computer.
-echo 2. Try launching this .bat file again.
-echo.
+echo If this is not your app, close the process using port 3000
+echo and run this launcher again.
+echo ==========================================================
+start "" http://localhost:3000
 pause
-exit /b
+exit /b 0
+
+:no_node
+echo.
+echo ERROR: Node.js was not found.
+echo Please install Node.js, then reopen this launcher.
+echo Download: https://nodejs.org/
+pause
+exit /b 1
+
+:no_npm
+echo.
+echo ERROR: npm was not found.
+echo Please reinstall Node.js and make sure npm is included.
+pause
+exit /b 1
+
+:npm_install_failed
+echo.
+echo ERROR: npm install failed.
+echo Check the error message above. Common causes:
+echo - Network or registry connection issue
+echo - No permission to write node_modules
+echo - package-lock.json conflict
+pause
+exit /b 1
